@@ -2,6 +2,8 @@
 
 int to_int(char chr) { return int(chr) - 48; }
 
+vector<vector<Cell>> Field::get_map() const { return map; }
+
 Field::Field()
 {
     ifstream file(MAP);
@@ -28,6 +30,11 @@ Field::Field()
     }
 
     file.close();
+}
+
+void Field::save_map(const vector<vector<Cell>>& obj)
+{ 
+    map = obj; 
 }
 
 string Field::to_show()
@@ -209,8 +216,92 @@ void Field::remove_lantern(int y, int x)
     map[y][x].delete_lantern();
     unmark_illumination_area(y, x);
 }
+//-------------------------------------------------
+int Field::number_lunterns_black_cell(Coor_cell& cell) 
+{
+    int num_lampern = 0;
+    int y, x;
+    int _y, _x;
 
-vector<Coor_cell> Field::find_black_cells_whis_simple_luntern()
+    if ((cell.number != PLACES_FOR_CROSS) && 
+        (cell.number != BLACK_CELL_NOT_LIMIT_LUNTERNS))
+    {          
+        _y = cell.y;
+        _x = cell.x;
+
+        //вверх
+        y = _y - 1;
+        if (is_check_board(y, _x) && map[y][_x].is_lantern())
+            num_lampern++;
+
+        //вниз
+        y = _y + 1;
+        if (is_check_board(y, _x) && map[y][_x].is_lantern())
+            num_lampern++;
+
+        //влево
+        x = _x - 1;
+        if (is_check_board(_y, x) && map[_y][x].is_lantern())
+            num_lampern++;
+
+        //вправо
+        x = _x + 1;
+        if (is_check_board(_y, x) && map[_y][x].is_lantern())
+            num_lampern++;
+    }
+
+    return num_lampern;
+}
+
+int Field::number_places_for_lunterns_black_cell(Coor_cell& cell)
+{
+    int num_places_for_lunterns = 0;
+    int y, x;
+    int _y, _x;
+
+    if ((cell.number != PLACES_FOR_CROSS) && 
+        (cell.number != BLACK_CELL_NOT_LIMIT_LUNTERNS))
+    {
+        _y = cell.y;
+        _x = cell.x;
+
+        //вверх
+        y = _y - 1;
+        if (is_check_board(y, _x) && map[y][_x].is_white() && 
+            !(map[y][_x].is_cross() || map[y][_x].is_lantern() || map[y][_x].is_illumination()) )
+            num_places_for_lunterns++;
+
+        //вниз
+        y = _y + 1;
+        if (is_check_board(y, _x) && map[y][_x].is_white() && 
+            !(map[y][_x].is_cross() || map[y][_x].is_lantern() || map[y][_x].is_illumination()) )
+            num_places_for_lunterns++;
+
+        //влево
+        x = _x - 1;
+        if (is_check_board(_y, x) && map[_y][x].is_white() && 
+            !(map[_y][x].is_cross() || map[_y][x].is_lantern() || map[_y][x].is_illumination()) )
+            num_places_for_lunterns++;
+
+        //вправо
+        x = _x + 1;
+        if (is_check_board(_y, x) && map[_y][x].is_white() &&
+            !(map[_y][x].is_cross() || map[_y][x].is_lantern() || map[_y][x].is_illumination()) )
+            num_places_for_lunterns++;
+    }
+
+    return num_places_for_lunterns;
+}
+
+//----------------------------------
+bool Field::is_simple_luntern(Coor_cell& cell) 
+{
+    int num_luntern = number_lunterns_black_cell(cell);
+    int num_places_for_luntern = number_places_for_lunterns_black_cell(cell);
+    return (cell.number - num_luntern) == num_places_for_luntern;
+}
+
+vector<Coor_cell> Field::find_places_for_simple_luntern()
 {
     vector<Coor_cell> seats;
     int y, x;
@@ -218,74 +309,40 @@ vector<Coor_cell> Field::find_black_cells_whis_simple_luntern()
 
     for (int i = 0; i < coor_black_cell.size(); i++)
     {
-        if (coor_black_cell[i].number != PLACES_FOR_CROSS)
+        if ( (coor_black_cell[i].number != PLACES_FOR_CROSS &&
+             coor_black_cell[i].number != BLACK_CELL_NOT_LIMIT_LUNTERNS) && 
+             is_simple_luntern(coor_black_cell[i]) )
         {
-            int num_lampern = 0;
             _y = coor_black_cell[i].y;
             _x = coor_black_cell[i].x;
 
             //вверх
             y = _y - 1;
-            if (is_check_board(y, _x) && (!map[y][_x].is_cross() && !map[y][_x].is_illumination()))
-                num_lampern++;
+            if (is_check_board(y, _x) && map[y][_x].is_white() &&
+                !(map[y][_x].is_cross() || map[y][_x].is_lantern() || map[y][_x].is_illumination()) )
+                seats.push_back(Coor_cell(y, _x));
 
             //вниз
             y = _y + 1;
-            if (is_check_board(y, _x) && (!map[y][_x].is_cross() && !map[y][_x].is_illumination()))
-                num_lampern++;
+            if (is_check_board(y, _x) && map[y][_x].is_white() &&
+                !(map[y][_x].is_cross() || map[y][_x].is_lantern() || map[y][_x].is_illumination()) )
+                seats.push_back(Coor_cell(y, _x));
 
             //влево
             x = _x - 1;
-            if (is_check_board(_y, x) && (!map[_y][x].is_cross() && !map[_y][x].is_illumination()))
-                num_lampern++;
+            if (is_check_board(_y, x) && map[_y][x].is_white() &&
+                !(map[_y][x].is_cross() || map[_y][x].is_lantern() || map[_y][x].is_illumination()) )
+                seats.push_back(Coor_cell(_y, x));
 
             //вправо
             x = _x + 1;
-            if (is_check_board(_y, x) && (!map[_y][x].is_cross() && !map[_y][x].is_illumination()))
-                num_lampern++;
-
-            if (coor_black_cell[i].number == num_lampern)
-                seats.push_back(coor_black_cell[i]);
+            if (is_check_board(_y, x) && map[_y][x].is_white() &&
+                !(map[_y][x].is_cross() || map[_y][x].is_lantern() || map[_y][x].is_illumination()))
+                seats.push_back(Coor_cell(_y, x));
         }
     }
 
     return seats;
-}
-
-vector<Coor_cell> Field::find_places_for_simple_luntern()
-{
-    vector<Coor_cell> seats = find_black_cells_whis_simple_luntern();
-    vector<Coor_cell> coor_luntern;
-    int y, x;
-    int _y, _x;
-
-    for (int i = 0; i < seats.size(); i++)
-    {
-        _y = seats[i].y;
-        _x = seats[i].x;
-
-        //вверх
-        y = _y - 1;
-        if (is_check_board(y, _x) && (!map[y][_x].is_cross() && !map[y][_x].is_illumination()))
-            coor_luntern.push_back(Coor_cell(y, _x));
-
-        //вниз
-        y = _y + 1;
-        if (is_check_board(y, _x) && (!map[y][_x].is_cross() && !map[y][_x].is_illumination()))
-            coor_luntern.push_back(Coor_cell(y, _x));
-
-        //влево
-        x = _x - 1;
-        if (is_check_board(_y, x) && (!map[_y][x].is_cross() && !map[_y][x].is_illumination()))
-            coor_luntern.push_back(Coor_cell(_y, x));
-
-        //вправо
-        x = _x + 1;
-        if (is_check_board(_y, x) && (!map[_y][x].is_cross() && !map[_y][x].is_illumination()))
-            coor_luntern.push_back(Coor_cell(_y, x));
-    }
-
-    return coor_luntern;
 }
 
 void Field::install_places_for_simple_luntern() 
@@ -296,11 +353,202 @@ void Field::install_places_for_simple_luntern()
     {
         for (int i = 0; i < places.size(); i++)
             install_lantern(places[i].y, places[i].x);
-
+        
         places = find_places_for_simple_luntern();
     }
 }
+
+bool Field::is_full_black_cell(Coor_cell& cell)
+{
+    return number_lunterns_black_cell(cell) == map[cell.y][cell.x].get_number();
+}
+
+bool Field::is_have_around_white_cell_full_black_cell(int _y, int _x) 
+//Является ли клетка является окружнием полной черной клеки
+{
+    if (map[_y][_x].is_white() && !map[_y][_x].is_lantern() && 
+        !map[_y][_x].is_cross() && !map[_y][_x].is_illumination())
+    {
+        int y, x;
+        Coor_cell cell;
+        //вверх
+        y = _y - 1;
+        if (is_check_board(y, _x) && map[y][_x].is_black())
+        {
+            cell = Coor_cell(y, _x, map[y][_x].get_number());
+            if (is_full_black_cell(cell))
+                return true;
+        }
+        //вниз
+        y = _y + 1;
+        if (is_check_board(y, _x) && map[y][_x].is_black())
+        {
+            cell = Coor_cell(y, _x, map[y][_x].get_number());
+            if (is_full_black_cell(cell))
+                return true;
+        }
+        //влево
+        x = _x - 1;
+        if (is_check_board(_y, x) && map[_y][x].is_black())
+        {
+            cell = Coor_cell(_y, x, map[_y][x].get_number());
+            if (is_full_black_cell(cell))
+                return true;
+        }
+        //вправо
+        x = _x + 1;
+        if (is_check_board(_y, x) && map[_y][x].is_black())
+        {
+            cell = Coor_cell(_y, x, map[_y][x].get_number());
+            if (is_full_black_cell(cell))
+                return true;
+        }
+    }
+    
+    return false;
+}
+
+bool Field::is_not_full_black_cell(Coor_cell& cell) 
+{
+    return number_lunterns_black_cell(cell) != cell.number;
+}
+
+bool Field::is_white_cell_without_possibility_light()
+{
+    bool result;
+    for (int _y = 0; _y < map.size(); _y++) 
+    {
+        for (int _x = 0; _x < map.size(); _x++)
+        {
+            result = true;
+
+            if ( (map[_y][_x].is_cross() && 
+                 !map[_y][_x].is_illumination()) ||
+                  is_have_around_white_cell_full_black_cell(_y, _x))
+            {
+                //вверх
+                for (int y = _y - 1; y >= 0 && !map[y][_x].is_black(); y--)
+                    if (!(map[y][_x].is_cross() || map[y][_x].is_illumination()))
+                    {
+                        result = false;
+                        break;
+                    }
+                        
+
+                //вниз
+                for (int y = _y + 1; y < map.size() && !map[y][_x].is_black(); y++)
+                    if (!(map[y][_x].is_cross() || map[y][_x].is_illumination()))
+                    {
+                        result = false;
+                        break;
+                    }
+
+                //влево
+                for (int x = _x - 1; x >= 0 && !map[_y][x].is_black(); x--)
+                    if (!(map[_y][x].is_cross() || map[_y][x].is_illumination()))
+                    {
+                        result = false;
+                        break;
+                    }
+
+                //вправо
+                for (int x = _x + 1; x < map.size() && !map[_y][x].is_black(); x++)
+                    if (!(map[_y][x].is_cross() || map[_y][x].is_illumination()))
+                    {
+                        result = false;
+                        break;
+                    }
+
+                if (result)
+                    return true;
+            }
+            
+        }
+    }
+
+    return false;
+}
+
+bool Field::is_can_install_luntern(Coor_cell& cell)
+{
+    int y = cell.y;
+    int x = cell.x;
+    bool is_res = true;
+
+    if (map[y][x].is_illumination() )
+        is_res = false;
+
+    if (is_have_around_white_cell_full_black_cell(y, x))
+        is_res = false;
+
+    install_lantern(y, x);
+    if (is_white_cell_without_possibility_light())
+        is_res = false;
+    remove_lantern(y, x);
+
+    return is_res;
+}
+
+vector<Coor_cell> Field::find_places_for_lunterns()
+{
+    vector<Coor_cell> seats;
+    int y, x;
+    int _y, _x;
+
+    for (int i = 0; i < coor_black_cell.size(); i++)
+    {
+        if ((coor_black_cell[i].number != PLACES_FOR_CROSS &&
+            coor_black_cell[i].number != BLACK_CELL_NOT_LIMIT_LUNTERNS) && 
+            is_not_full_black_cell(coor_black_cell[i]))
+        {
+            _y = coor_black_cell[i].y;
+            _x = coor_black_cell[i].x;
+
+            //вверх
+            y = _y - 1;
+            if (is_check_board(y, _x) && map[y][_x].is_white() &&
+                !(map[y][_x].is_cross() || map[y][_x].is_lantern() || map[y][_x].is_illumination()))
+                seats.push_back(Coor_cell(y, _x));
+
+            //вниз
+            y = _y + 1;
+            if (is_check_board(y, _x) && map[y][_x].is_white() &&
+                !(map[y][_x].is_cross() || map[y][_x].is_lantern() || map[y][_x].is_illumination()))
+                seats.push_back(Coor_cell(y, _x));
+
+            //влево
+            x = _x - 1;
+            if (is_check_board(_y, x) && map[_y][x].is_white() &&
+                !(map[_y][x].is_cross() || map[_y][x].is_lantern() || map[_y][x].is_illumination()))
+                seats.push_back(Coor_cell(_y, x));
+
+            //вправо
+            x = _x + 1;
+            if (is_check_board(_y, x) && map[_y][x].is_white() &&
+                !(map[_y][x].is_cross() || map[_y][x].is_lantern() || map[_y][x].is_illumination()))
+                seats.push_back(Coor_cell(_y, x));
+        }
+    }
+
+    return seats;
+}
 //------------------------------------------------------------------------------
+
+
+bool Field::is_full_lunterns()
+{
+    for (int i = 0; i < coor_black_cell.size(); i++)
+    {
+        if (coor_black_cell[i].number != PLACES_FOR_CROSS &&
+            coor_black_cell[i].number != BLACK_CELL_NOT_LIMIT_LUNTERNS)
+        {
+            if (coor_black_cell[i].number != number_lunterns_black_cell(coor_black_cell[i]))
+                return false;
+        }
+    }
+
+    return true;
+}
 bool Field::is_game_over()
 {
     for (int y = 0; y < SIZE; y++)
@@ -315,55 +563,3 @@ bool Field::is_game_over()
 
     return true;
 }
-
-//-----------------------------------------------------------------------
-/*
-List<Coor_cell> Field::find_not_illuminate_seat()
-{
-    List<Coor_cell> seats;
-    
-    for (int y = 0; y < SIZE; y++)
-    {
-        for (int x = 0; x < SIZE; x++)
-        {
-            if ( map[y][x].is_white() && 
-                !map[y][x].is_lantern() && 
-                !map[y][x].is_mark_prohidited_cell() &&
-                !map[y][x].is_illuminated_cell() &&
-                is_not_neighbor_black_cell(y, x) )
-            {
-                seats.push_back(Coor_cell(y, x));
-                goto out;
-            }
-        }
-    }
-
-    out:
-        return seats;
-}
-
-bool Field::is_not_neighbor_black_cell(int _y, int _x)
-{
-    bool neighbor = false;
-
-    int y, x;
-    //вверх
-    y = _y - 1;
-    if (is_check_board(y, _x) && map[y][_x].is_black() && map[y][_x].get_number() != 5)
-        neighbor = true;
-    //вниз
-    y = _y + 1;
-    if (is_check_board(y, _x) && map[y][_x].is_black() && map[y][_x].get_number() != 5)
-        neighbor = true;
-    //влево
-    x = _x - 1;
-    if (is_check_board(_y, x) && map[_y][x].is_black() && map[y][_x].get_number() != 5)
-        neighbor = true;
-    //вправо
-    x = _x + 1;
-    if (is_check_board(_y, x) && map[_y][x].is_black() && map[y][_x].get_number() != 5)
-        neighbor = true;    
-
-    return !neighbor;
-}
-*/

@@ -1,33 +1,45 @@
-/*
 #include "solution.h"
 
-void Solution::install_obvious_lanterns_around_black_cells()
+void Solution::setup_lunterns(Field field)
 {
-    List<Coor_cell> places = find_seats_around_black_cell();
-
-    while (!places.empty())
+    if (field.is_full_lunterns())
     {
-        for (int i = 0; i < places.size(); i++)
-            install_lantern(places[i].y, places[i].x);
+        save_map(field.get_map());
         cout << to_show() << endl;
-
-        places = find_seats_around_black_cell();
+        return;
     }
-
-    //cout << to_show() << endl;
-}
-
-void Solution::install_empty_cells()
-{
-    List<Coor_cell> places = find_not_illuminate_seat();
-
-    while (!places.empty())
+    
+    vector<Coor_cell> places = field.find_places_for_lunterns();
+    
+    for (int i = 0; i < places.size(); i++)
     {
-        install_lantern(places[0].y, places[0].x);
-            
-        cout << to_show() << endl;
-
-        places = find_not_illuminate_seat();
+        if (field.is_can_install_luntern(places[i]))
+        {
+            field.install_lantern(places[i].y, places[i].x);
+            setup_lunterns(field);
+            field.remove_lantern(places[i].y, places[i].x);
+        }
     }
 }
-*/
+
+void Solution::backlight_cells(Field field)
+{
+
+}
+
+void Solution::find_decision()
+{
+    Field field;
+
+    field.install_places_for_cross();
+    field.install_places_for_simple_luntern();
+    save_map(field.get_map());
+    cout << to_show() << endl;
+
+    setup_lunterns(field);
+    field.save_map(get_map());
+    //backlight_cells(field);
+    
+    cout << to_show() << endl;
+}
+

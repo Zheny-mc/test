@@ -1,15 +1,12 @@
-#include "field.h"
+#include "solution.h"
 
 int main()
 {
-    Field field;
+    Solution game;
+    game.find_decision();
 
-    cout << field.to_show() << '\n';
-    field.install_places_for_cross();
-    cout << field.to_show() << '\n';
-
-    field.install_places_for_simple_luntern();
-    cout << field.to_show() << '\n';  
-
+    //game.install_lantern(13, 4);
+    //Coor_cell v(14, 4, 1);
+    //cout << game.is_not_full_black_cell(v) << endl;
     return 0;
 }

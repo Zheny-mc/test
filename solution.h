@@ -3,12 +3,8 @@
 class Solution : public Field
 {
 public:
-    void setup_lunterns(Field field);
     void backlight_cells(Field field);
+    void setup_lunterns(Field field);
 
     void find_decision();
 };
-
-
-
-

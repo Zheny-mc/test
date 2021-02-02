@@ -61,6 +61,9 @@ public:
     int number_places_for_lunterns_black_cell(Coor_cell& cell);
     bool is_simple_luntern(Coor_cell& cell);
     //***********************************************
+
+    vector<Coor_cell> find_not_backlight_cell();
+    //*********************************************
     vector<vector<Cell>> get_map() const;
     void save_map(const vector<vector<Cell>>& obj);
 

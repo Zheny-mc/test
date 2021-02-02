@@ -534,6 +534,25 @@ vector<Coor_cell> Field::find_places_for_lunterns()
 }
 //------------------------------------------------------------------------------
 
+vector<Coor_cell> Field::find_not_backlight_cell()
+{
+    vector<Coor_cell> seats;
+
+    for (int y = 0; y < map.size(); y++)
+    {
+        for (int x = 0; x < map.size(); x++)
+        {
+            if (map[y][x].is_white() &&
+                !map[y][x].is_cross() &&
+                !map[y][x].is_illumination() )
+                seats.push_back(Coor_cell(y, x));
+        }
+    }
+
+    return seats;
+}
+
+//------------------------------------------------------------------------------
 
 bool Field::is_full_lunterns()
 {
@@ -551,9 +570,9 @@ bool Field::is_full_lunterns()
 }
 bool Field::is_game_over()
 {
-    for (int y = 0; y < SIZE; y++)
+    for (int y = 0; y < map.size(); y++)
     {
-        for (int x = 0; x < SIZE; x++)
+        for (int x = 0; x < map.size(); x++)
         {
             if (map[y][x].is_white() &&
                 !map[y][x].is_illumination())

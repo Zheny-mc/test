@@ -9,12 +9,12 @@ public class WebControl {
 
     @GetMapping("main")
     public String toMain() {
-        return "main";
+        return "/main";
     }
 
     @GetMapping("basket")
     public String toBasket() {
-        return "basket";
+        return "/basket";
     }
 
 

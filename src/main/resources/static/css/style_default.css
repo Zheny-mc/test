@@ -1,0 +1,28 @@
+body {
+    background: rgb(224, 245, 255);
+}
+
+#content {
+    height: 10em;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+}
+
+.welcome {
+    margin: 0;    
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+
+.welcome form {
+    margin: 0; 
+}
+
+input {
+    width: 100%;
+    font-size: 20px;
+}
